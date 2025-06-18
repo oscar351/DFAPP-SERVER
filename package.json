@@ -6,7 +6,7 @@
   },
   "private": true,
   "scripts": {
-    "postinstall": "npx prisma generate && node scripts/install-chrome.js",
+    "postinstall": "node scripts/install-chrome.js && npx prisma generate",
     "start": "node ./bin/www",
     "swagger-autogen": "node ./config/swagger.js"
   },

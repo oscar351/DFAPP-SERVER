@@ -1,18 +1,6 @@
-const { downloadBrowser } = require('@puppeteer/browsers');
-
-(async () => {
-    try {
-        const revision = '137.0.7151.55';
-        const platform = 'linux'; // Render 환경
-        const { executablePath } = await downloadBrowser({
-            browser: 'chrome',
-            platform,
-            buildId: revision,
-            cacheDir: '/opt/render/.cache/puppeteer',
-        });
-        console.log('✅ Chromium downloaded to', executablePath);
-    } catch (err) {
-        console.error('❌ Chromium download failed', err);
-        process.exit(1);
-    }
-})();
+const { install } = require('@puppeteer/browsers');
+install({
+    browser: 'chrome',
+    buildId: '137.0.7151.55', // 필요한 버전
+    cacheDir: '/opt/render/.cache/puppeteer',
+}).then(() => console.log('✅ Chrome installed'));
