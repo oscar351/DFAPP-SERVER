@@ -6,8 +6,9 @@
   },
   "private": true,
   "scripts": {
-  "postinstall": "prisma generate && npx puppeteer browsers install chrome",
-  "start": "node index.js"
+    "postinstall": "npx prisma generate && npx puppeteer browsers install chrome",
+    "start": "node ./bin/www",
+    "swagger-autogen": "node ./config/swagger.js"
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",
