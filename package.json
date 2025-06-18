@@ -6,7 +6,7 @@
   },
   "private": true,
   "scripts": {
-    "postinstall": "npx prisma generate && npx puppeteer browsers install chrome",
+    "postinstall": "npx prisma generate",
     "start": "node ./bin/www",
     "swagger-autogen": "node ./config/swagger.js"
   },
