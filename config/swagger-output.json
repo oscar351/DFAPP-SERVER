@@ -1,0 +1,42 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "이기민의 API",
+    "description": "프로젝트 설명 Node.js Swagger swagger-jsdoc 방식 RestFul API 클라이언트 UI"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "개발 서버"
+    }
+  ],
+  "tags": [
+    {
+      "name": "User API",
+      "description": "사용자 관련 API"
+    }
+  ],
+  "paths": {
+    "/characters": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/adven": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    }
+  }
+}

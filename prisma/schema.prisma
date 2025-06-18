@@ -1,0 +1,127 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model AdventureTeam {
+  adventure_name String
+  user_name      String
+  server         String
+
+  userCharacters UserCharacter[]
+  advenItems     AdvenItems[]
+
+  @@id([adventure_name, user_name])
+}
+
+model UserCharacter {
+  user_name      String
+  character_name String
+  job            String?
+  fame           Int?
+  set_point      Int?
+  damage         BigInt?
+  buff_power     BigInt?
+  switching      String?
+  detail_link    String?
+
+  visible        Boolean @default(true)
+
+  // 관계
+  adventure_name String
+
+  adventureTeam AdventureTeam @relation(fields: [adventure_name, user_name], references: [adventure_name, user_name], onDelete: Cascade)
+
+  character_items  CharacterItems[]
+  homework         Homework?
+  recommendDungeon RecommendDungeon[] @relation("CharacterRecommendations")
+
+  @@id([user_name, character_name])
+  @@index([user_name])
+  @@index([character_name])
+}
+
+model CharacterItems {
+  user_name        String
+  character_name   String
+  taecho           Int?    @default(0)
+  epic             Int?    @default(0)
+  legendary        Int?    @default(0)
+  abyss_worshipper Int?    @default(0)
+  jar_epic         Int?    @default(0)
+  jar_legend       Int?    @default(0)
+  detail_link      String?
+
+  userCharacter UserCharacter @relation(fields: [user_name, character_name], references: [user_name, character_name], onDelete: Cascade)
+
+  @@id([user_name, character_name])
+}
+
+model Homework {
+  id             Int    @id @default(autoincrement())
+  character_name String
+  user_name      String
+
+  // 숙제 항목들
+  nabel_normal Boolean @default(false)
+  nabel_match  Boolean @default(false)
+  mist         Boolean @default(false)
+  advent       Boolean @default(false)
+  stage2       Boolean @default(false)
+  stage1       Boolean @default(false)
+  goddess      Boolean @default(false)
+  azure        Boolean @default(false)
+  nightmare    Boolean @default(false)
+  moonlake     Boolean @default(false)
+  solidaris    Boolean @default(false)
+  whitevalley  Boolean @default(false)
+
+  character UserCharacter @relation(fields: [user_name, character_name], references: [user_name, character_name], onDelete: Cascade)
+
+  @@unique([user_name, character_name])
+}
+
+model RecommendDungeon {
+  user_name      String
+  character_name String
+
+  nabel_normal Boolean @default(false)
+  nabel_match  Boolean @default(false)
+  mist         Boolean @default(false)
+  advent       Boolean @default(false)
+  stage2       Boolean @default(false)
+  stage1       Boolean @default(false)
+  goddess      Boolean @default(false)
+  azure        Boolean @default(false)
+  nightmare    Boolean @default(false)
+  moonlake     Boolean @default(false)
+  solidaris    Boolean @default(false)
+  whitevalley  Boolean @default(false)
+
+  character UserCharacter @relation(name: "CharacterRecommendations", fields: [user_name, character_name], references: [user_name, character_name], onDelete: Cascade)
+
+  @@id([user_name, character_name])
+  @@map("recommend_dungeon")
+}
+
+model AdvenItems {
+  adventure_name     String @id
+  user_name          String
+
+  taecho             Int     @default(0)
+  taecho_ratio       String  @default("0%")
+  epic               Int     @default(0)
+  legendary          Int     @default(0)
+  jar_epic           Int     @default(0)
+  jar_legend         Int     @default(0)
+  top_character      String?
+  abyss_worshipper   Int     @default(0)
+
+  adventureTeam AdventureTeam @relation(fields: [adventure_name, user_name], references: [adventure_name, user_name], onDelete: Cascade)
+
+  @@unique([adventure_name, user_name])
+}
