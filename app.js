@@ -19,7 +19,7 @@ var app = express();
 
 //Cors정책
 let corsOptions = {
-  origin: ['http://localhost:3000', 'http://180.65.74.71:9030', 'https://dfapp-ld37.vercel.app/'],
+  origin: ['http://localhost:3000', 'http://180.65.74.71:9030', 'https://dfapp-ld37.vercel.app'],
   credentials: true, // 쿠키 등 credential 정보 허용
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // 허용할 메서드
   allowedHeaders: ['Content-Type', 'authorization'] // 허용할 헤더
