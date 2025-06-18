@@ -18,14 +18,28 @@ const router = require('./routes');
 var app = express();
 
 //Cors정책
-let corsOptions = {
-  origin: ['http://localhost:3000', 'http://180.65.74.71:9030', 'https://dfapp-ld37.vercel.app'],
-  credentials: true, // 쿠키 등 credential 정보 허용
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // 허용할 메서드
-  allowedHeaders: ['Content-Type', 'authorization'] // 허용할 헤더
-}
+const corsOptions = {
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://180.65.74.71:9030',
+      'https://dfapp-ld37.vercel.app'
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // OPTIONS 추가
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  preflightContinue: false, // 기본값 false
+  optionsSuccessStatus: 204  // 일부 브라우저를 위한 설정
+};
 
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 //Swagger 적용
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
@@ -34,7 +48,7 @@ const skipLogging = (req, res) => {
   return req.path === '/system/performance' || res.statusCode === 304;
 }
 
-app.use(logger('dev', { skip : skipLogging }));
+app.use(logger('dev', { skip: skipLogging }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
