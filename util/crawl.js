@@ -1,5 +1,14 @@
 const puppeteer = require('puppeteer');
 
+async function getBrowserPage() {
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    const page = await browser.newPage();
+    return { browser, page };
+}
+
 function parseKoreanNumber(text) {
     if (!text) return 0;
     let total = 0;
@@ -18,8 +27,7 @@ function parseCommaNumber(text) {
 }
 
 async function fetchAdventureData(advenName) {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
+    const { browser, page } = await getBrowserPage();
     const url = `https://dundam.xyz/search?server=adven&name=${encodeURIComponent(advenName)}`;
 
     await page.goto(url, { waitUntil: 'networkidle2' });
@@ -80,8 +88,7 @@ async function fetchAdventureData(advenName) {
 
 
 async function fetchCharacterData(server, keys) {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
+    const { browser, page } = await getBrowserPage();
     const results = [];
 
     for (const key of keys) {
@@ -99,8 +106,7 @@ async function fetchCharacterData(server, keys) {
 }
 
 async function fetchCharacterLuckyItem(advenName) {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
+    const { browser, page } = await getBrowserPage();
     const url = `https://dfgear.xyz/adventure?cName=${encodeURIComponent(advenName)}`;
 
     let dialogTriggered = false;
@@ -168,8 +174,7 @@ async function fetchCharacterLuckyItem(advenName) {
 }
 
 async function fetchAdvenLuckyItem(advenName) {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
+    const { browser, page } = await getBrowserPage();
     const url = `https://dfgear.xyz/advtDetail?name=${encodeURIComponent(advenName)}`;
 
     await page.goto(url, { waitUntil: 'networkidle2' });
