@@ -1,10 +1,10 @@
-const { download } = require('@puppeteer/browsers');
+const { downloadBrowser } = require('@puppeteer/browsers');
 
 (async () => {
     try {
-        const revision = '137.0.7151.55'; // 현재 puppeteer에서 요구하는 Chrome 버전
-        const platform = process.platform === 'linux' ? 'linux' : 'mac'; // Render는 linux
-        const { executablePath } = await download({
+        const revision = '137.0.7151.55';
+        const platform = 'linux'; // Render 환경
+        const { executablePath } = await downloadBrowser({
             browser: 'chrome',
             platform,
             buildId: revision,
