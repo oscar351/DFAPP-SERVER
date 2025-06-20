@@ -1,5 +1,6 @@
 const express = require('express');
 const { fetchAdventureData, fetchCharacterData, fetchCharacterLuckyItem, fetchAdvenLuckyItem } = require('../../util/crawl');
+const { makeRecommend } = require('../../util/recommend')
 const prisma = require('../../client');
 
 const crawlAdventure = async (req, res, next) => {
@@ -219,9 +220,15 @@ const crawlCharacter = async (req, res, next) => {
         // 3. 크롤링
         const resultsChar = await fetchCharacterData(server, detailLinks);
         const resultsAdven = await fetchAdventureData(adventure_name);
-
         // 4. 데이터 upsert + 연관 테이블 보장
         for (const char of resultsAdven) {
+
+            const rec = makeRecommend({
+                fame: Number(char.level ?? 0),
+                damage: Number(char.damage ?? 0),
+                buff: Number(char.buff_power ?? 0),
+            });
+
             const character_name = char.name;
 
             await prisma.UserCharacter.upsert({
@@ -232,7 +239,7 @@ const crawlCharacter = async (req, res, next) => {
                     job: char.job,
                     fame: parseInt(char.level || "0", 10),
                     set_point: parseInt(char.set_point || "0", 10),
-                    switching: char.switching,
+                    switching: char.switcing,
                     damage: char.damage,
                     buff_power: char.buff_power,
                     adventureTeam: {
@@ -247,7 +254,7 @@ const crawlCharacter = async (req, res, next) => {
                     job: char.job,
                     fame: parseInt(char.level || "0", 10),
                     set_point: parseInt(char.set_point || "0", 10),
-                    switching: char.switching,
+                    switching: char.switcing,
                     damage: char.damage,
                     buff_power: char.buff_power,
                     adventureTeam: {
@@ -255,6 +262,21 @@ const crawlCharacter = async (req, res, next) => {
                             adventure_name_user_name: { adventure_name, user_name },
                         },
                     },
+                },
+            });
+
+            await prisma.recommendDungeon.upsert({
+                where: {
+                    user_name_character_name: {
+                        user_name,
+                        character_name: char.name,
+                    },
+                },
+                update: rec,
+                create: {
+                    user_name,
+                    character_name: char.name,
+                    ...rec,
                 },
             });
 

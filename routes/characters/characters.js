@@ -6,31 +6,38 @@ const transformBigInt = (obj) => {
 };
 
 const getCharacters = async (req, res) => {
+    const { name } = req.query;
+
+    if (!name) {
+        return res.status(400).json({ error: 'Missing required query parameter: name' });
+    }
+
     try {
-        const { name } = req.query;
 
-        const data = await prisma.UserCharacter.findMany({
-            where: {
-                user_name: name,
-            },
-            orderBy: [
-                { damage: 'desc' },
-                { buff_power: 'desc' }, // damage가 같을 때 buff_power 기준 정렬
-            ],
-            include: {
-                recommendDungeon: true,
-                character_items: true,
-                adventureTeam: true,  // ✅ 정확한 관계 이름
-                homework: true        // ✅ 이것도 관계 이름이 맞는 경우만 포함
-            }
+        const [characters, buffSets] = await Promise.all([
+            prisma.userCharacter.findMany({
+                where: { user_name: name },
+                orderBy: [{ damage: 'desc' }, { buff_power: 'desc' }],
+                include: {
+                    recommendDungeon: true,
+                    character_items: true,
+                    adventureTeam: true,
+                    homework: true,
+                },
+            }),
+            prisma.buffExchangeSet.findMany({
+                where: { user_name: name },
+            }),
+        ]);
+
+        const safeData = transformBigInt(characters);
+        res.json({
+            characters: transformBigInt(characters),
+            buffSets,                             // 그대로 내려줌
         });
-
-        const safeData = transformBigInt(data);
-
-        res.json(safeData);
     } catch (error) {
-        console.error('Error fetching characters:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error(`[ERROR][GET /characters] Failed to fetch characters for user "${name}":`, err);
+        return res.status(500).json({ error: 'Failed to retrieve character data. Please try again later.' });
     }
 };
 
@@ -103,6 +110,17 @@ const addAdventureTeam = async (req, res) => {
             return res.status(409).json({ error: 'Adventure team already exists' });
         }
 
+
+        const characters = await fetchAdventureData(adventure_name);
+        console.log(`[크롤링 완료] ${characters.length}개의 캐릭터`);
+
+        if (!characters.length) {
+            console.warn(`[크롤링 실패] "${adventure_name}" 모험단에서 캐릭터를 찾을 수 없습니다.`);
+            return res.status(400).json({
+                error: `모험단 "${adventure_name}"에 해당하는 캐릭터 정보를 찾을 수 없습니다.`,
+            });
+        }
+
         const newTeam = await prisma.AdventureTeam.create({
             data: {
                 user_name,
@@ -110,9 +128,6 @@ const addAdventureTeam = async (req, res) => {
                 server,
             },
         });
-
-        const characters = await fetchAdventureData(adventure_name);
-        console.log(`[크롤링 완료] ${characters.length}개의 캐릭터`);
 
         for (const char of characters) {
 
@@ -387,6 +402,34 @@ const damageRank = async (req, res) => {
     }
 }
 
+
+const BuffRank = async (req, res) => {
+    try {
+        const topBuff = await prisma.userCharacter.findMany({
+            where: { buff_power: { not: null } },
+            orderBy: { buff_power: 'desc' },
+            take: 20,
+            select: {
+                user_name: true,
+                character_name: true,
+                job: true,
+                buff_power: true,
+                adventure_name: true
+            }
+        });
+
+        const data = topBuff.map(u => ({
+            ...u,
+            buff_power: u.buff_power?.toString() ?? '0'
+        }));
+
+        res.json(data);
+    } catch (err) {
+        console.error('damageRank error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
 const luckyRank = async (req, res) => {
     try {
 
@@ -508,6 +551,7 @@ module.exports = {
     summary,
     getCharactersItem,
     damageRank,
+    BuffRank,
     luckyRank,
     luckyAdvenRank,
     patchCharacterVisibility
